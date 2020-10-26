@@ -1,30 +1,48 @@
 import Buyable from '../domain/Buyable';
 
 export default class Cart {
-    private _items: Buyable[] = [];
+  private _items: Buyable[] = [];
 
-    add(item: Buyable): void {
-        this._items.push(item);
+  add(item: Buyable): void {
+    const itemIndex = this._items.findIndex(product => product.id == item.id);
+    if (itemIndex == -1) {
+      this._items.push(item);
+    } else {
+      if (this._items[itemIndex].hasOwnProperty('quantity')) {
+        this._items[itemIndex].quantity! += item.quantity!;
+      }
     }
+  }
 
-    get items(): Buyable[] {
-        return [...this._items]; 
-    }
+  get items(): Buyable[] {
+    return [...this._items];
+  }
 
-    getAmount(): number {
-      let amount = 0;
-      for (const item of this._items) {
+  getAmount(): number {
+    let amount = 0;
+    for (const item of this._items) {
+      if (item.hasOwnProperty('quantity')) {
+        amount += item.price * item.quantity!;
+      } else {
         amount += item.price;
       }
-      return amount;
     }
+    return amount;
+  }
 
-    getDiscountedAmount(discountPercent: number): number {
-      return this.getAmount() * (1 - discountPercent / 100);
-    }
+  getDiscountedAmount(discountPercent: number): number {
+    return this.getAmount() * (1 - discountPercent / 100);
+  }
 
-    remove(id: number): void {
-      const itemIndex = this._items.findIndex(item => item.id == id);
-      itemIndex == -1 ? console.log('Item is not in the cart') : this._items.splice(itemIndex);
+  remove(id: number): void {
+    const itemIndex = this._items.findIndex(item => item.id == id);
+    if (itemIndex != -1) this._items.splice(itemIndex, 1);
+  }
+
+  removePiece(id: number): void {
+    const itemIndex = this._items.findIndex(item => item.id == id);
+    if (itemIndex != -1 && this._items[itemIndex].hasOwnProperty('quantity') && this._items[itemIndex].quantity! > 1) {
+      this._items[itemIndex].quantity! -= 1;
     }
+  }
 }
